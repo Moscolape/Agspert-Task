@@ -1,6 +1,7 @@
 import './index.css';
 
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import {  MultiSelectTheme } from 'chakra-multiselect'
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -11,20 +12,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const queryClient = new QueryClient();
 
 // Custom theme configuration
-const colors = {
-  brand: {
-    900: '#1a365d',
-    800: '#153e75',
-    700: '#2a69ac',
-  }
-};
-
 const fonts = {
   heading: `'Inter', sans-serif`,
   body: `'Poppins', sans-serif`
 };
 
-const theme = extendTheme({ colors, fonts });
+const components = {
+  MultiSelect: MultiSelectTheme
+};
+
+const theme = extendTheme({ fonts, components });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

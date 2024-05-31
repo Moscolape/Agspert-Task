@@ -31,7 +31,7 @@ export const SaleOrders: SaleOrder[] = [
     ],
     paid: false,
     invoice_no: "Invoice - 1212121",
-    invoice_date: "7/5/2024",
+    invoice_date: "2024-05-24T02:46:41.995828Z",
   },
   {
     customer_id: 11909,
@@ -50,7 +50,7 @@ export const SaleOrders: SaleOrder[] = [
     ],
     paid: true,
     invoice_no: "Invoice - 1212122",
-    invoice_date: "8/5/2024",
+    invoice_date: "2024-02-17T20:17:41.995828Z",
   },
   {
     customer_id: 11910,
@@ -69,7 +69,7 @@ export const SaleOrders: SaleOrder[] = [
     ],
     paid: false,
     invoice_no: "Invoice - 1212123",
-    invoice_date: "9/5/2024",
+    invoice_date: "2024-04-04T10:29:41.995828Z",
   },
   {
     customer_id: 11911,
@@ -88,7 +88,7 @@ export const SaleOrders: SaleOrder[] = [
     ],
     paid: true,
     invoice_no: "Invoice - 1212124",
-    invoice_date: "10/5/2024",
+    invoice_date: "2024-01-31T22:22:41.995828Z",
   },
   {
     customer_id: 11912,
@@ -107,6 +107,6 @@ export const SaleOrders: SaleOrder[] = [
     ],
     paid: false,
     invoice_no: "Invoice - 1212125",
-    invoice_date: "11/5/2024",
+    invoice_date: "2024-03-24T20:45:41.995828Z",
   },
 ];

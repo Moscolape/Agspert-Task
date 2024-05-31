@@ -39,3 +39,15 @@ body {
 .animate-bump {
   animation: bump 1s linear 1;
 }
+
+/* For Firefox */
+.custom-scrollbar-example::-moz-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* General styling */
+.custom-scrollbar-example::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}

@@ -14,6 +14,7 @@ import {
   // Select,
   // Spinner,
   Text,
+  Textarea,
   // useDisclosure,
 } from "@chakra-ui/react";
 import { SaleOrder } from "../../schemas/sale-order";
@@ -26,20 +27,24 @@ interface Order {
 }
 
 const EditSaleOrder: React.FC<Order> = ({ order, open, close }) => {
-
   return (
-    <Modal isOpen={open} onClose={close} size='xl' isCentered>
+    <Modal isOpen={open} onClose={close} size="xl" isCentered>
       <ModalOverlay bg="blackAlpha.500" />
-      <ModalContent p={6} fontFamily="Inter" animation="animate-bump">
+      <ModalContent
+        p={6}
+        fontFamily="Inter"
+        height="75vh"
+        animation="animate-bump"
+      >
         <ModalCloseButton onClick={close} />
         <ModalHeader display="flex" justifyContent="center">
-          <Text fontWeight="bold" color="red.500" fontSize="2xl">
+          <Text fontWeight="medium" color="red.500" fontSize="2xl">
             Edit Sale Order
           </Text>
         </ModalHeader>
         <ModalBody>
           <Box mb={5}>
-            <Text fontWeight="semibold">Programme Name</Text>
+            <Text fontWeight="semibold">Customer Id</Text>
             <Input
               mt={3}
               defaultValue={order!.customer_id}
@@ -48,27 +53,30 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close }) => {
             />
           </Box>
           <Box mb={5}>
-            <Text fontWeight="semibold">Grant Date</Text>
+            <Text fontWeight="semibold">Customer Name</Text>
             <Input
               mt={3}
-              type="date"
-              defaultValue={order?.invoice_date}
+              type="text"
+              defaultValue={order?.customer_name}
               outline="none"
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             />
           </Box>
           <Box mb={5}>
-            <Text fontWeight="semibold">Expiry Date</Text>
-            <Input
+            <Text fontWeight="semibold">Items Purchased</Text>
+            <Textarea
               mt={3}
-              type="date"
-              defaultValue={order?.invoice_date}
+              height="10rem"
+              resize="none"
+              p={2}
               outline="none"
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             />
           </Box>
           <Flex justify="center" mt={6}>
-            <Button colorScheme="red">Update</Button>
+            <Button colorScheme="red" fontWeight="medium">
+              {order?.paid ? 'Close' : 'Update'}
+            </Button>
           </Flex>
         </ModalBody>
       </ModalContent>

@@ -17,7 +17,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { SaleOrder, SaleOrderItem, SaleOrders } from "../../schemas/sale-order";
 import EditSaleOrder from "../modals/edit-sale-order-modal";
-
+import moment from "moment";
 
 // Mock fetch function
 const fetchSaleOrders = (): Promise<SaleOrder[]> => {
@@ -28,24 +28,22 @@ const fetchSaleOrders = (): Promise<SaleOrder[]> => {
   });
 };
 
-
 interface SalesProps {
   activeTab: string;
 }
 
-
-const SalesOrders: React.FC<SalesProps> = ({activeTab}) => {
+const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SaleOrder | null>(null);
 
   const Edit = (order: SaleOrder) => {
     setOpenEdit(true);
     setSelectedOrder(order);
-  }
+  };
 
   const closeEdit = () => {
     setOpenEdit(false);
-  }
+  };
 
   const { data, error, isLoading } = useQuery<SaleOrder[], Error>({
     queryKey: ["saleOrders"],
@@ -54,21 +52,33 @@ const SalesOrders: React.FC<SalesProps> = ({activeTab}) => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-        <Spinner size="xl" color="#EE1B24"/>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
+        <Spinner size="xl" color="#EE1B24" />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="50vh"
+      >
         <Text>Failed to load sale orders: {error.message}</Text>
       </Box>
     );
   }
 
-  const filteredOrders = data?.filter(order => activeTab === "active" ? !order.paid : order.paid);
+  const filteredOrders = data?.filter((order) =>
+    activeTab === "active" ? !order.paid : order.paid
+  );
 
   return (
     <TableContainer>
@@ -89,21 +99,31 @@ const SalesOrders: React.FC<SalesProps> = ({activeTab}) => {
               <Td>{order.customer_name}</Td>
               <Td>
                 {order.items.reduce(
-                  (total: number, item: SaleOrderItem) => total + item.price * item.quantity,
+                  (total: number, item: SaleOrderItem) =>
+                    total + item.price * item.quantity,
                   0
                 )}
               </Td>
-              <Td>{order.invoice_date}</Td>
+              <Td>
+                {moment(order.invoice_date).format("DD/MM/YYYY")} (
+                {moment(order.invoice_date).format("LT")})
+              </Td>
               <Td>
                 <Box cursor="pointer" display="flex" justifyContent="flex-end">
-                  <Image src={More} onClick={() => Edit(order)}/>
+                  <Image src={More} onClick={() => Edit(order)} />
                 </Box>
               </Td>
             </Tr>
           ))}
         </Tbody>
       </Table>
-      {openEdit && <EditSaleOrder open={openEdit} close={closeEdit} order={selectedOrder}/>}
+      {openEdit && (
+        <EditSaleOrder
+          open={openEdit}
+          close={closeEdit}
+          order={selectedOrder}
+        />
+      )}
     </TableContainer>
   );
 };

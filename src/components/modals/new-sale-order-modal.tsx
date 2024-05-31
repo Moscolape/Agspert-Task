@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Flex,
-  // Image,
   Input,
   Modal,
   ModalOverlay,
@@ -12,11 +11,14 @@ import {
   ModalBody,
   ModalCloseButton,
   Select,
-  // Spinner,
   Text,
   Spacer,
-  // useDisclosure,
+  Checkbox,
 } from "@chakra-ui/react";
+
+import { Customers } from "../../schemas/customers";
+import { MultiSelect, useMultiSelect } from "chakra-multiselect";
+import { Products } from "../../schemas/products";
 
 interface Order {
   open: boolean;
@@ -24,35 +26,59 @@ interface Order {
 }
 
 const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
+  const productOptions = Products.map((product) => ({
+    label: product.name,
+    value: product.id.toString(),
+  }));
+
+  const { value, options, onChange } = useMultiSelect({
+    value: [],
+    options: productOptions,
+  });
+
+  const renderAllCustomers = () => {
+    return Customers.map((customer, index) => (
+      <option key={index} value={customer.id}>
+        {customer.customer_profile.name}
+      </option>
+    ));
+  };
 
   return (
-    <Modal isOpen={open} onClose={close} size='2xl' isCentered>
+    <Modal isOpen={open} onClose={close} size="2xl" isCentered>
       <ModalOverlay bg="blackAlpha.500" />
-      <ModalContent p={6} fontFamily="Inter" animation="animate-bump">
+      <ModalContent
+        p={6}
+        fontFamily="Inter"
+        height="75vh"
+        animation="animate-bump"
+      >
         <ModalCloseButton onClick={close} />
         <ModalHeader display="flex" justifyContent="center" my={5}>
-          <Text fontWeight="bold" color="red.500" fontSize="2xl">
+          <Text fontWeight="medium" color="red.500" fontSize="2xl">
             Sale Order Form
           </Text>
         </ModalHeader>
-        <ModalBody>
+        <ModalBody
+          overflowY="scroll"
+          height="60vh"
+          className="custom-scrollbar-example"
+        >
           <Flex>
-            <Box mb={5} w='45%'>
+            <Box mb={5} w="45%">
               <Text fontWeight="semibold">Invoice Number</Text>
               <Input
                 mt={3}
-                // defaultValue={order!.customer_id}
                 outline="none"
                 _focus={{ boxShadow: "none", borderColor: "gray.300" }}
               />
             </Box>
             <Spacer />
-            <Box mb={5} w='45%'>
+            <Box mb={5} w="45%">
               <Text fontWeight="semibold">Invoice Date</Text>
               <Input
                 mt={3}
                 type="date"
-                // defaultValue={order?.invoice_date}
                 outline="none"
                 _focus={{ boxShadow: "none", borderColor: "gray.300" }}
               />
@@ -60,14 +86,75 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
           </Flex>
           <Box mb={5}>
             <Text fontWeight="semibold">Customer</Text>
-            <Select placeholder='Select option' mt={3}>
-              <option value='option1'>Option 1</option>
-              <option value='option2'>Option 2</option>
-              <option value='option3'>Option 3</option>
+            <Select
+              placeholder="Select a customer"
+              mt={3}
+              outline="none"
+              _focus={{ boxShadow: "none", borderColor: "gray.300" }}
+            >
+              {renderAllCustomers()}
             </Select>
           </Box>
-          <Flex justify="center" mt={6}>
-            <Button colorScheme="red">Update</Button>
+          <Box mb={5}>
+            <Text fontWeight="semibold" mb={3}>
+              All Products
+            </Text>
+            <MultiSelect
+              options={options}
+              value={value}
+              onChange={onChange}
+              placeholder="Select product(s)"
+            />
+          </Box>
+          <Flex mt={10}>
+            <Checkbox colorScheme="red" size='lg'>Is Paid</Checkbox>
+            <Spacer />
+            <Flex align='center'>
+              <Box
+                bg="gray.100"
+                borderRadius={5}
+                p={2}
+                color="black"
+                boxShadow='sm'
+                fontWeight='medium'
+              >
+                Total Price: ₹34
+              </Box>
+              <Box
+                bg="gray.100"
+                borderRadius={5}
+                color="black"
+                p={2}
+                ml={3}
+                boxShadow='sm'
+                fontWeight='medium'
+              >
+                Total Items: 23
+              </Box>
+            </Flex>
+          </Flex>
+          <Flex mt={6}>
+            <Button
+              w="48%"
+              colorScheme="white"
+              color="red"
+              border="1px"
+              borderColor="red"
+              boxShadow='sm'
+              fontWeight='medium'
+              >
+              Discard
+            </Button>
+            <Spacer />
+            <Button
+              colorScheme="gray"
+              color="black"
+              w='48%'
+              boxShadow='sm'
+              fontWeight='medium'
+            >
+              Create Sale Order
+            </Button>
           </Flex>
         </ModalBody>
       </ModalContent>
