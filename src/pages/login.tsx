@@ -20,28 +20,11 @@ import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { Customer } from "../schemas/customers";
 
 interface LoginInput {
   email: string;
   password: string;
-}
-
-interface CustomerProfile {
-  id: number;
-  name: string;
-  color: number[];
-  email: string;
-  pincode: string;
-  location_name: string;
-  type: string;
-  profile_pic: string | null;
-  gst: string;
-}
-
-interface Customer {
-  id: number;
-  customer: number;
-  customer_profile: CustomerProfile;
 }
 
 type LoginOutput = {
@@ -191,7 +174,7 @@ const Login = () => {
               disabled={!isFormValid}
             >
               {loading ? ( // Show Spinner if loading
-                <Spinner size="md" color="white" mr={2} thickness="4px" speed="0.8s" />
+                <Spinner size="md" color="white" mr={2} thickness="3px" speed="0.8s" />
               ) : (
                 <Text>Log In</Text> // Show "Log In" text if not loading
               )}

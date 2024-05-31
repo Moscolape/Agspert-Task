@@ -6,6 +6,7 @@ export interface SaleOrderItem {
 
 export interface SaleOrder {
   customer_id: number;
+  customer_name: string;
   items: SaleOrderItem[];
   paid: boolean;
   invoice_no: string;
@@ -15,6 +16,7 @@ export interface SaleOrder {
 export const SaleOrders: SaleOrder[] = [
   {
     customer_id: 11908,
+    customer_name: 'Vishtu',
     items: [
       {
         sku_id: 220,
@@ -33,6 +35,7 @@ export const SaleOrders: SaleOrder[] = [
   },
   {
     customer_id: 11909,
+    customer_name: 'Kareem',
     items: [
       {
         sku_id: 222,
@@ -51,6 +54,7 @@ export const SaleOrders: SaleOrder[] = [
   },
   {
     customer_id: 11910,
+    customer_name: 'Zanjeer',
     items: [
       {
         sku_id: 224,
@@ -69,6 +73,7 @@ export const SaleOrders: SaleOrder[] = [
   },
   {
     customer_id: 11911,
+    customer_name: 'John Doe',
     items: [
       {
         sku_id: 226,
@@ -87,6 +92,7 @@ export const SaleOrders: SaleOrder[] = [
   },
   {
     customer_id: 11912,
+    customer_name: 'Mary Jane',
     items: [
       {
         sku_id: 228,

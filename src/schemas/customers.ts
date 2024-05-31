@@ -1,7 +1,7 @@
 export interface CustomerProfile {
   id: number;
   name: string;
-  color: [number, number, number];
+  color: number[];
   email: string;
   pincode: string;
   location_name: string;
