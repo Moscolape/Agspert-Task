@@ -2,8 +2,9 @@ import { Box, Button, ButtonGroup, Flex, Spacer, Text } from "@chakra-ui/react";
 import Wrapper from "../components/general/wrapper";
 import { AddIcon } from "@chakra-ui/icons";
 import SalesOrders from "../components/sales/sales.orders";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NewSaleOrder from "../components/modals/new-sale-order-modal";
+import { useNavigate } from "react-router-dom";
 
 const Sales = () => {
   // State to manage the sales tab (active or completed)
@@ -13,6 +14,8 @@ const Sales = () => {
   });
 
   const [openNewOrder, setOpenNewOrder] = useState(false);
+
+  const navigate = useNavigate();
 
   const newOrder = () => {
     setOpenNewOrder(true);
@@ -26,6 +29,13 @@ const Sales = () => {
     setActiveTab(tab);
     sessionStorage.setItem("activeTab", tab);
   };
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem('customer');
+    if (!stored) {
+      navigate('/');
+    }
+  }, [navigate]);
 
   return (
     <Wrapper>
@@ -53,10 +63,7 @@ const Sales = () => {
         <Spacer />
         <Box p="2">
           <Button
-            colorScheme="white"
-            color="red"
-            border="1px"
-            borderColor="red"
+            colorScheme="red"
             onClick={newOrder}
           >
             <AddIcon />

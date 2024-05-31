@@ -14,6 +14,7 @@ import {
   Text,
   Spacer,
   Checkbox,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
 import { Customers } from "../../schemas/customers";
@@ -44,6 +45,10 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
     ));
   };
 
+  // Use color mode values
+  const modalBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
+
   return (
     <Modal isOpen={open} onClose={close} size="2xl" isCentered>
       <ModalOverlay bg="blackAlpha.500" />
@@ -52,10 +57,11 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
         fontFamily="Inter"
         height="75vh"
         animation="animate-bump"
+        bg={modalBg}
       >
         <ModalCloseButton onClick={close} />
         <ModalHeader display="flex" justifyContent="center" my={5}>
-          <Text fontWeight="medium" color="red.500" fontSize="2xl">
+          <Text fontWeight="medium" color={textColor} fontSize="2xl">
             Sale Order Form
           </Text>
         </ModalHeader>
@@ -66,7 +72,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
         >
           <Flex>
             <Box mb={5} w="45%">
-              <Text fontWeight="semibold">Invoice Number</Text>
+              <Text fontWeight="medium">Invoice Number</Text>
               <Input
                 mt={3}
                 outline="none"
@@ -75,7 +81,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
             </Box>
             <Spacer />
             <Box mb={5} w="45%">
-              <Text fontWeight="semibold">Invoice Date</Text>
+              <Text fontWeight="medium">Invoice Date</Text>
               <Input
                 mt={3}
                 type="date"
@@ -85,7 +91,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
             </Box>
           </Flex>
           <Box mb={5}>
-            <Text fontWeight="semibold">Customer</Text>
+            <Text fontWeight="medium">Customer</Text>
             <Select
               placeholder="Select a customer"
               mt={3}
@@ -96,7 +102,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
             </Select>
           </Box>
           <Box mb={5}>
-            <Text fontWeight="semibold" mb={3}>
+            <Text fontWeight="medium" mb={3}>
               All Products
             </Text>
             <MultiSelect
@@ -133,30 +139,30 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
               </Box>
             </Flex>
           </Flex>
-          <Flex mt={6}>
-            <Button
-              w="48%"
-              colorScheme="white"
-              color="red"
-              border="1px"
-              borderColor="red"
-              boxShadow='sm'
-              fontWeight='medium'
-              >
-              Discard
-            </Button>
-            <Spacer />
-            <Button
-              colorScheme="gray"
-              color="black"
-              w='48%'
-              boxShadow='sm'
-              fontWeight='medium'
-            >
-              Create Sale Order
-            </Button>
-          </Flex>
         </ModalBody>
+        <Flex mt={6}>
+          <Button
+            w="48%"
+            colorScheme="white"
+            color="red"
+            border="1px"
+            borderColor="red"
+            boxShadow='sm'
+            fontWeight='medium'
+            >
+            Discard
+          </Button>
+          <Spacer />
+          <Button
+            colorScheme="gray"
+            color={textColor}
+            w='48%'
+            boxShadow='sm'
+            fontWeight='medium'
+          >
+            Create Sale Order
+          </Button>
+        </Flex>
       </ModalContent>
     </Modal>
   );

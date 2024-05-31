@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Image,
   Table,
@@ -24,7 +24,7 @@ const fetchSaleOrders = (): Promise<SaleOrder[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(SaleOrders);
-    }, 2000);
+    }, 1000);
   });
 };
 
@@ -35,6 +35,7 @@ interface SalesProps {
 const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SaleOrder | null>(null);
+  const [orders, setOrders] = useState<SaleOrder[]>([]);
 
   const Edit = (order: SaleOrder) => {
     setOpenEdit(true);
@@ -43,12 +44,28 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
 
   const closeEdit = () => {
     setOpenEdit(false);
+    setSelectedOrder(null);
+  };
+
+  const updateOrder = (updatedOrder: SaleOrder) => {
+    setOrders((prevOrders) =>
+      prevOrders.map((order) =>
+        order.invoice_no === updatedOrder.invoice_no ? updatedOrder : order
+      )
+    );
+    closeEdit();
   };
 
   const { data, error, isLoading } = useQuery<SaleOrder[], Error>({
     queryKey: ["saleOrders"],
     queryFn: fetchSaleOrders,
   });
+
+  useEffect(() => {
+    if (data) {
+      setOrders(data);
+    }
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -76,7 +93,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
     );
   }
 
-  const filteredOrders = data?.filter((order) =>
+  const filteredOrders = orders.filter((order) =>
     activeTab === "active" ? !order.paid : order.paid
   );
 
@@ -93,7 +110,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
           </Tr>
         </Thead>
         <Tbody>
-          {filteredOrders?.map((order: SaleOrder) => (
+          {filteredOrders.map((order: SaleOrder) => (
             <Tr key={order.invoice_no}>
               <Td>{order.customer_id}</Td>
               <Td>{order.customer_name}</Td>
@@ -117,11 +134,12 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
           ))}
         </Tbody>
       </Table>
-      {openEdit && (
+      {openEdit && selectedOrder && (
         <EditSaleOrder
           open={openEdit}
           close={closeEdit}
           order={selectedOrder}
+          updateOrder={updateOrder}
         />
       )}
     </TableContainer>

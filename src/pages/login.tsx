@@ -12,7 +12,8 @@ import {
   InputLeftElement,
   InputRightElement,
   IconButton,
-  Spinner, // Import Spinner component from Chakra UI
+  Spinner,
+  useColorModeValue,
 } from "@chakra-ui/react";
 
 import { Logo } from "../constants/assets";
@@ -30,13 +31,15 @@ interface LoginInput {
 type LoginOutput = {
   message: string;
   customer: Customer;
-}; // Adjust this to match what your fake API returns
+};
 
 const Login = () => {
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -48,7 +51,7 @@ const Login = () => {
     email,
     password,
   }: LoginInput): Promise<LoginOutput> => {
-    setLoading(true);
+    setIsLoading(true);
     const fixedUsername = "jesus_christ@church.com";
     const fixedPassword = "Mumbai";
 
@@ -71,12 +74,12 @@ const Login = () => {
             },
           };
           resolve({ message: "Success", customer });
-          setLoading(false);
+          setIsLoading(false);
         } else {
-          setLoading(false);
+          setIsLoading(false);
           reject(new Error("Invalid username or password"));
         }
-      }, 3000);
+      }, 2000);
     });
   };
 
@@ -88,7 +91,7 @@ const Login = () => {
         navigate("/sales");
       },
       onError: (error: Error) => {
-        alert(error.message);
+        setError(error.message);
       },
     });
 
@@ -97,7 +100,11 @@ const Login = () => {
     mutation.mutate({ email, password });
   };
 
-  const isFormValid = email !== "" && password !== ""
+    // Use color mode values
+    const modalBg = useColorModeValue("white", "gray.800");
+    const textColor = useColorModeValue("gray.800", "white");
+
+  // const isFormValid = email !== "" && password !== "";
 
   return (
     <Flex height="90vh" alignItems="center" justifyContent="center">
@@ -107,16 +114,25 @@ const Login = () => {
         borderWidth={1}
         borderRadius={8}
         boxShadow="lg"
-        bg="white"
+        bg={modalBg}
       >
         <Center mb={8}>
           <Image src={Logo} boxSize="75px" />
         </Center>
         <Center mb={4}>
-          <Text fontSize="30px" fontFamily="heading" fontWeight={600}>
+          <Text fontSize="30px" fontFamily="heading" fontWeight={600} color={textColor}>
             Log In
           </Text>
         </Center>
+        {error &&
+          <Box p={3} bg='red.100' my={5} borderRadius={3}>
+            <Center>
+              <Text color='red'>
+                {error}
+              </Text>
+            </Center>
+          </Box>
+        }
         <form onSubmit={handleSubmit}>
           <Box fontFamily="body">
             <FormControl mb={4}>
@@ -126,6 +142,7 @@ const Login = () => {
                   <EmailIcon fontSize="20px" color="#939498" />
                 </InputLeftElement>
                 <Input
+                  required
                   type="email"
                   placeholder="Enter your email"
                   value={email}
@@ -142,6 +159,7 @@ const Login = () => {
                   <LockIcon fontSize="20px" color="#939498" />
                 </InputLeftElement>
                 <Input
+                  required
                   type={show ? "text" : "password"}
                   placeholder="Enter your password"
                   value={password}
@@ -154,29 +172,24 @@ const Login = () => {
                     aria-label="Toggle password visibility"
                     color="#939498"
                     icon={show ? <ViewIcon /> : <ViewOffIcon />}
+                    variant="ghost"
                   />
                 </InputRightElement>
               </InputGroup>
             </FormControl>
-            {/* Render Spinner while mutation is in loading state */}
             <Button
               type="submit"
               width="full"
               mt={4}
-              bgColor="#EE1B24"
+              colorScheme="red"
+              // bgColor=''
               color="white"
-              _hover={{
-                bgColor: "#D01720",
-              }}
-              _disabled={{
-                bgColor: "gray.50"
-              }}
-              disabled={!isFormValid}
+              isDisabled = {email === "" || password === ""}
             >
-              {loading ? ( // Show Spinner if loading
+              {isLoading ? (
                 <Spinner size="md" color="white" mr={2} thickness="3px" speed="0.8s" />
               ) : (
-                <Text>Log In</Text> // Show "Log In" text if not loading
+                <Text color='white'>Log In</Text>
               )}
             </Button>
           </Box>
