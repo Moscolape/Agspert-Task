@@ -11,6 +11,8 @@ export interface SaleOrder {
   paid: boolean;
   invoice_no: string;
   invoice_date: string;
+  total_price?: number;
+  last_modified?: string;
 }
 
 export const SaleOrders: SaleOrder[] = [

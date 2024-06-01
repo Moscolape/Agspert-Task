@@ -14,10 +14,12 @@ import {
   IconButton,
   Spinner,
   useColorModeValue,
+  useColorMode,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 
 import { Logo } from "../constants/assets";
-import { EmailIcon, LockIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { EmailIcon, LockIcon, MoonIcon, SunIcon, ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
@@ -37,6 +39,7 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { colorMode, toggleColorMode } = useColorMode();
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -100,27 +103,41 @@ const Login = () => {
     mutation.mutate({ email, password });
   };
 
-    // Use color mode values
-    const modalBg = useColorModeValue("white", "gray.800");
-    const textColor = useColorModeValue("gray.800", "white");
+  // Use color mode values
+  const modalBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.800", "white");
 
-  // const isFormValid = email !== "" && password !== "";
+  const iconSize = useBreakpointValue({ base: "sm", md: "md" });
 
   return (
-    <Flex height="90vh" alignItems="center" justifyContent="center">
+    <Flex
+      height={{ base: "100vh", md: "90vh" }}
+      alignItems="center"
+      justifyContent="center"
+      p={4}
+    >
+      <IconButton
+        aria-label="Toggle theme"
+        icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+        onClick={toggleColorMode}
+        size={iconSize}
+        position='fixed'
+        top={5}
+        left={5}
+      />
       <Box
-        p={10}
-        minWidth="500px"
-        borderWidth={1}
-        borderRadius={8}
-        boxShadow="lg"
+        p={{ base: 6, md: 10 }}
+        width={{ base: "100%", sm: "400px", md: "500px" }}
+        borderWidth={{base: 0, md: 1}}
+        borderRadius={{base: 0, md: 8}}
+        boxShadow={{ base: "none", md: "lg" }}
         bg={modalBg}
       >
         <Center mb={8}>
-          <Image src={Logo} boxSize="75px" />
+          <Image src={Logo} boxSize={{ base: "50px", md: "75px" }} />
         </Center>
         <Center mb={4}>
-          <Text fontSize="30px" fontFamily="heading" fontWeight={600} color={textColor}>
+          <Text fontSize={{ base: "24px", md: "30px" }} fontFamily="heading" fontWeight={600} color={textColor}>
             Log In
           </Text>
         </Center>
@@ -173,6 +190,7 @@ const Login = () => {
                     color="#939498"
                     icon={show ? <ViewIcon /> : <ViewOffIcon />}
                     variant="ghost"
+                    size="sm"
                   />
                 </InputRightElement>
               </InputGroup>
@@ -182,14 +200,13 @@ const Login = () => {
               width="full"
               mt={4}
               colorScheme="red"
-              // bgColor=''
               color="white"
-              isDisabled = {email === "" || password === ""}
+              isDisabled={email === "" || password === ""}
             >
               {isLoading ? (
                 <Spinner size="md" color="white" mr={2} thickness="3px" speed="0.8s" />
               ) : (
-                <Text color='white'>Log In</Text>
+                "Log In"
               )}
             </Button>
           </Box>

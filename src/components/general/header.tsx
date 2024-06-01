@@ -1,4 +1,4 @@
-import { Box, Flex, Spacer, Text, Image, Center, useColorMode, IconButton, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Spacer, Text, Image, Center, useColorMode, IconButton, useColorModeValue, useBreakpointValue } from "@chakra-ui/react";
 import { User } from "../../constants/assets";
 import { useEffect, useState } from "react";
 import Logout from "../modals/logout-modal";
@@ -29,44 +29,53 @@ const Header = () => {
   const modalBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
 
+  // Responsive values
+  const iconSize = useBreakpointValue({ base: "sm", md: "md" });
+  const fontSizeHeading = useBreakpointValue({ base: "xl", md: "2xl" });
+  const fontSizeName = useBreakpointValue({ base: "lg", md: "xl" });
+  const userBoxSize = useBreakpointValue({ base: "40px", md: "60px" });
+  const userBoxPadding = useBreakpointValue({ base: "5px", md: "10px" });
+  const userBoxMargin = useBreakpointValue({ base: "10px", md: "20px" });
+
   return (
     <Flex
       bg={modalBg}
-      w="100%"
+      w={{ base: "104%", md: "100%" }}
       p={3}
-      // color="white"
       boxShadow="md"
       align="center"
+      direction={{ base: "column", md: "row" }}
     >
-      <Flex align='center'>
+      <Flex align='center' w={{ base: "100%", md: "auto" }} mb={{ base: 3, md: 0 }}>
         <IconButton
           aria-label="Toggle theme"
           icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
           onClick={toggleColorMode}
+          size={iconSize}
         />
         <Text
           color={textColor}
           fontFamily="heading"
-          fontSize="2xl"
+          fontSize={fontSizeHeading}
           fontWeight={600}
           ml={3}
         >
           Sales
         </Text>
       </Flex>
-      <Spacer />
-      <Flex align="center">
-        <Text color={textColor} fontFamily="heading" fontSize="xl" fontWeight={400}>
+      <Spacer display={{ base: "none", md: "block" }} />
+      <Flex align="center" w={{ base: "100%", md: "auto" }} justify={{ base: "center", md: "flex-end" }}>
+        <Text color={textColor} fontFamily="heading" fontSize={fontSizeName} fontWeight={400}>
           Welcome, {name}
         </Text>
         <Box
           bg="white"
-          boxSize="60px"
+          boxSize={userBoxSize}
           borderWidth="3px"
           borderColor="black"
           borderRadius="full"
-          p="10px"
-          ml="20px"
+          p={userBoxPadding}
+          ml={userBoxMargin}
         >
           <Center>
             <Image src={User} cursor='pointer' onClick={openLogout}/>

@@ -11,6 +11,9 @@ import {
   Box,
   Spinner,
   Text,
+  useBreakpointValue,
+  Stack,
+  Button,
 } from "@chakra-ui/react";
 import { More } from "../../constants/assets";
 import { useQuery } from "@tanstack/react-query";
@@ -66,15 +69,12 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
       setOrders(data);
     }
   }, [data]);
-
+  
+  const isMobile = useBreakpointValue({ base: true, md: false });
+  
   if (isLoading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
         <Spinner size="xl" color="#EE1B24" />
       </Box>
     );
@@ -82,12 +82,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
 
   if (error) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
         <Text>Failed to load sale orders: {error.message}</Text>
       </Box>
     );
@@ -97,50 +92,83 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
     activeTab === "active" ? !order.paid : order.paid
   );
 
+
   return (
     <TableContainer>
-      <Table variant="striped" colorScheme="gray">
-        <Thead>
-          <Tr>
-            <Th>ID</Th>
-            <Th>Customer Name</Th>
-            <Th>Price</Th>
-            <Th>Last Modified</Th>
-            <Th isNumeric>Edit/View</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
+      {isMobile ? (
+        <Stack spacing={4}>
           {filteredOrders.map((order: SaleOrder) => (
-            <Tr key={order.invoice_no}>
-              <Td>{order.customer_id}</Td>
-              <Td>{order.customer_name}</Td>
-              <Td>
+            <Box key={order.invoice_no} p={4} borderWidth="1px" borderRadius="lg">
+              <Text>ID: {order.customer_id}</Text>
+              <Text>Customer Name: {order.customer_name}</Text>
+              <Text>
+                Price:{" "}
                 {order.items.reduce(
                   (total: number, item: SaleOrderItem) =>
                     total + item.price * item.quantity,
                   0
                 )}
-              </Td>
-              <Td>
-                {moment(order.invoice_date).format("DD/MM/YYYY")} (
-                {moment(order.invoice_date).format("LT")})
-              </Td>
-              <Td>
-                <Box cursor="pointer" display="flex" justifyContent="flex-end">
-                  <Image src={More} onClick={() => Edit(order)} />
-                </Box>
-              </Td>
-            </Tr>
+              </Text>
+              <Text>
+                Last Modified:{" "}
+                {moment(order.last_modified ? order.last_modified : order.invoice_date).format(
+                  "DD/MM/YYYY"
+                )}{" "}
+                (
+                {moment(order.last_modified ? order.last_modified : order.invoice_date).format(
+                  "LT"
+                )}
+                )
+              </Text>
+              <Button mt={2} onClick={() => Edit(order)} rightIcon={<Image src={More} />}>
+                Edit/View
+              </Button>
+            </Box>
           ))}
-        </Tbody>
-      </Table>
+        </Stack>
+      ) : (
+        <Table variant="striped" colorScheme="gray">
+          <Thead>
+            <Tr>
+              <Th>ID</Th>
+              <Th>Customer Name</Th>
+              <Th>Price</Th>
+              <Th>Last Modified</Th>
+              <Th isNumeric>Edit/View</Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {filteredOrders.map((order: SaleOrder) => (
+              <Tr key={order.invoice_no}>
+                <Td>{order.customer_id}</Td>
+                <Td>{order.customer_name}</Td>
+                <Td>
+                  {order.items.reduce(
+                    (total: number, item: SaleOrderItem) =>
+                      total + item.price * item.quantity,
+                    0
+                  )}
+                </Td>
+                <Td>
+                  {moment(order.last_modified ? order.last_modified : order.invoice_date).format(
+                    "DD/MM/YYYY"
+                  )}{" "}
+                  ({moment(order.last_modified ? order.last_modified : order.invoice_date).format(
+                    "LT"
+                  )})
+                </Td>
+                <Td>
+                  <Box cursor="pointer" display="flex" justifyContent="flex-end">
+                    <Image src={More} onClick={() => Edit(order)} />
+                  </Box>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      )}
       {openEdit && selectedOrder && (
-        <EditSaleOrder
-          open={openEdit}
-          close={closeEdit}
-          order={selectedOrder}
-          updateOrder={updateOrder}
-        />
+        <EditSaleOrder open={openEdit} close={closeEdit} order={selectedOrder} updateOrder={updateOrder} />
       )}
     </TableContainer>
   );

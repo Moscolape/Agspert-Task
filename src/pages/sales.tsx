@@ -43,19 +43,22 @@ const Sales = () => {
         minWidth="max-content"
         alignItems="center"
         gap="2"
-        mx="20px"
-        my="50px"
+        mx={{ base: "10px", md: "20px" }}
+        my={{ base: "20px", md: "50px" }}
+        flexDirection={{ base: "column", md: "row" }}
       >
-        <ButtonGroup gap="2">
+        <ButtonGroup gap="2" mb={{ base: 4, md: 0 }}>
           <Button
             colorScheme={activeTab === "active" ? "red" : "gray"}
             onClick={() => toggleTab("active")}
+            size={{ base: "sm", md: "md" }}
           >
             Active Sale Orders
           </Button>
           <Button
             colorScheme={activeTab === "completed" ? "red" : "gray"}
             onClick={() => toggleTab("completed")}
+            size={{ base: "sm", md: "md" }}
           >
             Completed Sale Orders
           </Button>
@@ -65,9 +68,10 @@ const Sales = () => {
           <Button
             colorScheme="red"
             onClick={newOrder}
+            size={{ base: "sm", md: "md" }}
           >
             <AddIcon />
-            <Text ml="10px">Sale Order</Text>
+            <Text ml="10px" display={{ base: "none", md: "inline" }}>Sale Order</Text>
           </Button>
         </Box>
       </Flex>

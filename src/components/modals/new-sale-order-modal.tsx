@@ -1,4 +1,4 @@
-// import React, { useState, useRef } from "react";
+import React from "react";
 import {
   Box,
   Button,
@@ -15,6 +15,7 @@ import {
   Spacer,
   Checkbox,
   useColorModeValue,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 
 import { Customers } from "../../schemas/customers";
@@ -49,8 +50,12 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
   const modalBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
 
+  // Responsive width values
+  const modalWidth = useBreakpointValue({ base: "90%", md: "2xl" });
+  const boxWidth = useBreakpointValue({ base: "100%", md: "45%" });
+
   return (
-    <Modal isOpen={open} onClose={close} size="2xl" isCentered>
+    <Modal isOpen={open} onClose={close} size={modalWidth} isCentered>
       <ModalOverlay bg="blackAlpha.500" />
       <ModalContent
         p={6}
@@ -70,8 +75,8 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
           height="60vh"
           className="custom-scrollbar-example"
         >
-          <Flex>
-            <Box mb={5} w="45%">
+          <Flex direction={useBreakpointValue({ base: "column", md: "row" })}>
+            <Box mb={5} w={boxWidth}>
               <Text fontWeight="medium">Invoice Number</Text>
               <Input
                 mt={3}
@@ -80,7 +85,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
               />
             </Box>
             <Spacer />
-            <Box mb={5} w="45%">
+            <Box mb={5} w={boxWidth}>
               <Text fontWeight="medium">Invoice Date</Text>
               <Input
                 mt={3}
@@ -112,7 +117,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
               placeholder="Select product(s)"
             />
           </Box>
-          <Flex mt={10}>
+          <Flex mt={10} direction={useBreakpointValue({ base: "column", md: "row" })}>
             <Checkbox colorScheme="red" size='lg'>Is Paid</Checkbox>
             <Spacer />
             <Flex align='center'>
@@ -123,6 +128,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
                 color="black"
                 boxShadow='sm'
                 fontWeight='medium'
+                mt={{ base: 4, md: 0 }}
               >
                 Total Price: ₹34
               </Box>
@@ -134,31 +140,33 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
                 ml={3}
                 boxShadow='sm'
                 fontWeight='medium'
+                mt={{ base: 4, md: 0 }}
               >
                 Total Items: 23
               </Box>
             </Flex>
           </Flex>
         </ModalBody>
-        <Flex mt={6}>
+        <Flex mt={6} direction={useBreakpointValue({ base: "column", md: "row" })}>
           <Button
-            w="48%"
+            w={{ base: "100%", md: "48%" }}
             colorScheme="white"
             color="red"
             border="1px"
             borderColor="red"
             boxShadow='sm'
             fontWeight='medium'
-            >
+          >
             Discard
           </Button>
           <Spacer />
           <Button
             colorScheme="gray"
             color={textColor}
-            w='48%'
+            w={{ base: "100%", md: "48%" }}
             boxShadow='sm'
             fontWeight='medium'
+            mt={{ base: 4, md: 0 }}
           >
             Create Sale Order
           </Button>

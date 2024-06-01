@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -14,8 +14,9 @@ import {
   Textarea,
   useColorModeValue,
   Checkbox,
+  useBreakpointValue,
 } from "@chakra-ui/react";
-import { SaleOrder } from "../../schemas/sale-order";
+import { SaleOrder, SaleOrderItem } from "../../schemas/sale-order";
 
 interface Order {
   order: SaleOrder | null;
@@ -28,9 +29,19 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
   const [customerId, setCustomerId] = useState<number | string>(order?.customer_id || "");
   const [customerName, setCustomerName] = useState(order?.customer_name || "");
   const [isPaid, setIsPaid] = useState(order?.paid || false);
+  const [items, setItems] = useState<SaleOrderItem[]>(order?.items || []);
+  const [totalPrice, setTotalPrice] = useState(0);
 
   const modalBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
+
+  useEffect(() => {
+    const calculateTotalPrice = () => {
+      const total = items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+      setTotalPrice(total);
+    };
+    calculateTotalPrice();
+  }, [items]);
 
   const handleUpdate = () => {
     if (order) {
@@ -38,21 +49,36 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
         ...order,
         customer_id: typeof customerId === 'string' ? parseInt(customerId) : customerId,
         customer_name: customerName,
-        paid: isPaid
+        paid: isPaid,
+        items: items,
+        total_price: totalPrice,
+        last_modified: new Date().toISOString()
       };
       updateOrder(updatedOrder);
     }
   };
 
+  const handleItemsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newItems = e.target.value.split("\n").map((line) => {
+      const [skuId, rest] = line.split(" => ");
+      const [quantity, price] = rest.split(" x ").map(Number);
+      return { sku_id: parseInt(skuId.replace("SKU_ID ", "")), quantity, price };
+    });
+    setItems(newItems);
+  };
+
+  const modalSize = useBreakpointValue({ base: "full", md: "xl" });
+
   return (
-    <Modal isOpen={open} onClose={close} size="xl" isCentered>
+    <Modal isOpen={open} onClose={close} size={modalSize} isCentered>
       <ModalOverlay bg="blackAlpha.500" />
       <ModalContent
         p={6}
         fontFamily="Inter"
-        height="75vh"
+        height={{ base: "100vh", md: "75vh" }}
         animation="animate-bump"
         bg={modalBg}
+        borderRadius={{ base: "0", md: "md" }}
       >
         <ModalCloseButton onClick={close} />
         <ModalHeader display="flex" justifyContent="center">
@@ -62,7 +88,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
         </ModalHeader>
         <ModalBody
           overflowY="scroll"
-          height="60vh"
+          height={{ base: "calc(100vh - 140px)", md: "60vh" }}
           className="custom-scrollbar-example"
         >
           <Box mb={5}>
@@ -109,10 +135,22 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
               p={2}
               outline="none"
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
-              defaultValue={order?.items
+              value={items
                 .map((item) => `SKU_ID ${item.sku_id} => ${item.quantity} x ${item.price}`)
                 .join("\n")}
+              onChange={handleItemsChange}
               readOnly={order?.paid === true}
+            />
+          </Box>
+          <Box mb={5}>
+            <Text fontWeight="medium">Total Price</Text>
+            <Input
+              mt={3}
+              type="text"
+              value={totalPrice}
+              readOnly
+              outline="none"
+              _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             />
           </Box>
         </ModalBody>
