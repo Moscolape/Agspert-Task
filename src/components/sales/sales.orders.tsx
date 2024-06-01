@@ -27,7 +27,7 @@ const fetchSaleOrders = (): Promise<SaleOrder[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(SaleOrders);
-    }, 1000);
+    }, 2000);
   });
 };
 

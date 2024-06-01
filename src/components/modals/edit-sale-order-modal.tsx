@@ -82,7 +82,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
       >
         <ModalCloseButton onClick={close} />
         <ModalHeader display="flex" justifyContent="center">
-          <Text fontWeight="medium" color={textColor} fontSize="2xl">
+          <Text fontWeight="semibold" color={textColor} fontSize="2xl">
             Edit Sale Order
           </Text>
         </ModalHeader>

@@ -3,8 +3,11 @@ import Wrapper from "../components/general/wrapper";
 import { AddIcon } from "@chakra-ui/icons";
 import SalesOrders from "../components/sales/sales.orders";
 import { useEffect, useState } from "react";
-import NewSaleOrder from "../components/modals/new-sale-order-modal";
+// import NewSaleOrder from "../components/modals/new-sale-order-modal";
 import { useNavigate } from "react-router-dom";
+import NewSaleOrder from "../components/modals/new-sale-order-modal";
+
+// import NewSaleOrder from "../components/modals/new-sale-order-modal";
 
 const Sales = () => {
   // State to manage the sales tab (active or completed)
