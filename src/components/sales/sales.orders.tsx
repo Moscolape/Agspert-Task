@@ -199,7 +199,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
         // Render edit modal if openEdit is true and selectedOrder is not null
         <EditSaleOrder open={openEdit} close={closeEdit} order={selectedOrder} updateOrder={updateOrder} />
       )}
-      {open && <NewSaleOrder open={open} close={close} add={addNewOrder}/>} // Render new sale order modal if open is true
+      {open && <NewSaleOrder open={open} close={close} add={addNewOrder}/>}
     </TableContainer>
   );
 };
