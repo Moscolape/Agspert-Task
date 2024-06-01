@@ -21,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SaleOrder, SaleOrderItem, SaleOrders } from "../../schemas/sale-order";
 import EditSaleOrder from "../modals/edit-sale-order-modal";
 import moment from "moment";
+import NewSaleOrder from "../modals/new-sale-order-modal";
 
 // Mock fetch function
 const fetchSaleOrders = (): Promise<SaleOrder[]> => {
@@ -33,9 +34,11 @@ const fetchSaleOrders = (): Promise<SaleOrder[]> => {
 
 interface SalesProps {
   activeTab: string;
+  open: boolean;
+  close: () => void;
 }
 
-const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
+const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<SaleOrder | null>(null);
   const [orders, setOrders] = useState<SaleOrder[]>([]);
@@ -57,6 +60,18 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
       )
     );
     closeEdit();
+  };
+
+  const addNewOrder = (newOrder: SaleOrder) => {
+    setOrders(prevOrders => {
+      if (newOrder.paid) {
+        // Append to completed orders
+        return [...prevOrders, newOrder];
+      } else {
+        // Append to active orders
+        return [...prevOrders, newOrder];
+      }
+    });
   };
 
   const { data, error, isLoading } = useQuery<SaleOrder[], Error>({
@@ -170,6 +185,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab }) => {
       {openEdit && selectedOrder && (
         <EditSaleOrder open={openEdit} close={closeEdit} order={selectedOrder} updateOrder={updateOrder} />
       )}
+      {open && <NewSaleOrder open={open} close={close} add={addNewOrder}/>}
     </TableContainer>
   );
 };

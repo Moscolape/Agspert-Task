@@ -23,6 +23,7 @@ import { EmailIcon, LockIcon, MoonIcon, SunIcon, ViewIcon, ViewOffIcon } from "@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Customer } from "../schemas/customers";
 
 interface LoginInput {
@@ -37,14 +38,13 @@ type LoginOutput = {
 
 const Login = () => {
   const [show, setShow] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const { colorMode, toggleColorMode } = useColorMode();
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>();
 
   const handleClick = () => {
     setShow(!show);
@@ -98,9 +98,8 @@ const Login = () => {
       },
     });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    mutation.mutate({ email, password });
+  const onSubmit: SubmitHandler<LoginInput> = (data) => {
+    mutation.mutate(data);
   };
 
   // Use color mode values
@@ -150,7 +149,7 @@ const Login = () => {
             </Center>
           </Box>
         }
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <Box fontFamily="body">
             <FormControl mb={4}>
               <FormLabel>Email</FormLabel>
@@ -159,12 +158,11 @@ const Login = () => {
                   <EmailIcon fontSize="20px" color="#939498" />
                 </InputLeftElement>
                 <Input
-                  required
+                  {...register("email", { required: true })}
                   type="email"
                   placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                   outline="none"
+                  borderColor={errors.email ? 'red' : 'gray.100'}
                   _focus={{ boxShadow: "none", borderColor: "gray.100" }}
                 />
               </InputGroup>
@@ -176,12 +174,11 @@ const Login = () => {
                   <LockIcon fontSize="20px" color="#939498" />
                 </InputLeftElement>
                 <Input
-                  required
+                  {...register("password", { required: true })}
                   type={show ? "text" : "password"}
                   placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   outline="none"
+                  borderColor={errors.password ? 'red' : 'gray.100'}
                   _focus={{ boxShadow: "none", borderColor: "gray.100" }}
                 />
                 <InputRightElement cursor="pointer" onClick={handleClick}>
@@ -201,7 +198,7 @@ const Login = () => {
               mt={4}
               colorScheme="red"
               color="white"
-              isDisabled={email === "" || password === ""}
+              isDisabled={isLoading}
             >
               {isLoading ? (
                 <Spinner size="md" color="white" mr={2} thickness="3px" speed="0.8s" />

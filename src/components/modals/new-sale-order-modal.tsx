@@ -23,18 +23,22 @@ import {
   AccordionIcon,
   Card,
   Center,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 
 import { Customers } from "../../schemas/customers";
 import { MultiSelect, useMultiSelect } from "chakra-multiselect";
 import { Products } from "../../schemas/products";
+import { SaleOrder } from "../../schemas/sale-order";
 
 interface Order {
   open: boolean;
   close: () => void;
+  add: (params: SaleOrder) => void;
 }
 
-const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
+const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
   const productOptions = Products.map((product) => ({
     label: product.name,
     value: product.id.toString(),
@@ -51,6 +55,12 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
   const [selectedCustomer, setSelectedCustomer] = useState('');
 
   const createNewOrder = () => {
+    // Check if any required field is empty
+    if (!invoiceNo || !invoiceDate || !selectedCustomer || calculateTotalPrice() === 0) {
+      // If any required field is empty, don't add new sales order
+      return;
+    }
+
     const items = Object.keys(totalItems).map((skuId) => ({
       sku_id: parseInt(skuId),
       price: sellingRates[skuId],
@@ -64,21 +74,18 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
       customer_name: selectedCustomer,
       price: calculateTotalPrice(),
       paid: isPaid,
-      items: items,
+      items: items
     };
 
-    console.log(newSaleOrder);
+    add(newSaleOrder);
+    close();
   };
 
   // State to keep track of total items for selected products
-  const [totalItems, setTotalItems] = useState<{ [productId: string]: number }>(
-    {}
-  );
+  const [totalItems, setTotalItems] = useState<{ [productId: string]: number }>({});
 
   // State to keep track of selling rates for selected products
-  const [sellingRates, setSellingRates] = useState<{
-    [skuId: string]: number;
-  }>({});
+  const [sellingRates, setSellingRates] = useState<{ [skuId: string]: number }>({});
 
   // Effect to reset total items and selling rates when products are cleared
   useEffect(() => {
@@ -144,6 +151,16 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
     }, 0);
   };
 
+  const resetFields = () => {
+    setInvoiceNo('');
+    setInvoiceDate('');
+    setSelectedCustomer('');
+    setTotalItems({});
+    setSellingRates({});
+    setIsPaid(false);
+    onChange([]);
+  };
+
   return (
     <Modal isOpen={open} onClose={close} size={modalWidth} isCentered>
       <ModalOverlay bg="blackAlpha.500" />
@@ -166,53 +183,48 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
           className="custom-scrollbar-example"
         >
           <Flex direction={useBreakpointValue({ base: "column", md: "row" })}>
-            <Box mb={5} w={boxWidth}>
-              <Text fontWeight="medium">Invoice Number</Text>
+            <FormControl mb={5} w={boxWidth} isRequired>
+              <FormLabel fontWeight="medium">Invoice Number</FormLabel>
               <Input
-                mt={3}
                 value={invoiceNo}
-                onChange={(e) => setInvoiceNo(e.target.value)}  
+                onChange={(e) => setInvoiceNo(e.target.value)}
                 outline="none"
                 _focus={{ boxShadow: "none", borderColor: "gray.300" }}
               />
-            </Box>
+            </FormControl>
             <Spacer />
-            <Box mb={5} w={boxWidth}>
-              <Text fontWeight="medium">Invoice Date</Text>
+            <FormControl mb={5} w={boxWidth} isRequired>
+              <FormLabel fontWeight="medium">Invoice Date</FormLabel>
               <Input
-                mt={3}
                 type="date"
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
                 outline="none"
                 _focus={{ boxShadow: "none", borderColor: "gray.300" }}
               />
-            </Box>
+            </FormControl>
           </Flex>
-          <Box mb={5}>
-            <Text fontWeight="medium">Customer</Text>
+          <FormControl mb={5} isRequired>
+            <FormLabel fontWeight="medium">Customer</FormLabel>
             <Select
               placeholder="Select a customer"
               value={selectedCustomer}
               onChange={(e) => setSelectedCustomer(e.target.value)}
-              mt={3}
               outline="none"
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             >
               {renderAllCustomers()}
             </Select>
-          </Box>
-          <Box mb={5}>
-            <Text fontWeight="medium" mb={3}>
-              All Products
-            </Text>
+          </FormControl>
+          <FormControl mb={5} isRequired>
+            <FormLabel fontWeight="medium">All Products</FormLabel>
             <MultiSelect
               options={options}
               value={value}
               onChange={onChange}
               placeholder="Select product(s)"
             />
-          </Box>
+          </FormControl>
           <Box mb={5} mt={10}>
             <Accordion allowToggle>
               {Array.isArray(value) &&
@@ -252,17 +264,9 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
                                   direction={{ base: "column", md: "row" }}
                                   mt={5}
                                 >
-                                  <Box mb={5} w={boxWidth}>
-                                    <Text fontWeight="medium">
-                                      Selling Rate
-                                    </Text>
+                                  <FormControl mb={5} w={boxWidth}>
+                                    <FormLabel fontWeight="medium">Selling Rate</FormLabel>
                                     <Input
-                                      mt={3}
-                                      outline="none"
-                                      _focus={{
-                                        boxShadow: "none",
-                                        borderColor: "gray.300",
-                                      }}
                                       placeholder="Enter selling rate"
                                       onChange={(e) =>
                                         handleSellingRateChange(
@@ -270,19 +274,18 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
                                           e
                                         )
                                       }
-                                    />
-                                  </Box>
-                                  <Spacer />
-                                  <Box mb={5} w={boxWidth}>
-                                    <Text fontWeight="medium">Total Items</Text>
-                                    <Input
-                                      mt={3}
-                                      type="number"
                                       outline="none"
                                       _focus={{
                                         boxShadow: "none",
                                         borderColor: "gray.300",
                                       }}
+                                    />
+                                  </FormControl>
+                                  <Spacer />
+                                  <FormControl mb={5} w={boxWidth}>
+                                    <FormLabel fontWeight="medium">Total Items</FormLabel>
+                                    <Input
+                                      type="number"
                                       placeholder="Enter quantity"
                                       max={
                                         unit.quantity_in_inventory
@@ -296,8 +299,13 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
                                           e
                                         )
                                       }
+                                      outline="none"
+                                      _focus={{
+                                        boxShadow: "none",
+                                        borderColor: "gray.300",
+                                      }}
                                     />
-                                  </Box>
+                                  </FormControl>
                                 </Flex>
                               </Box>
                               <Button
@@ -336,7 +344,12 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
             mt={10}
             direction={useBreakpointValue({ base: "column", md: "row" })}
           >
-            <Checkbox colorScheme="red" size="lg" onChange={() => setIsPaid(!isPaid)}>
+            <Checkbox
+              colorScheme="red"
+              size="lg"
+              isChecked={isPaid}
+              onChange={() => setIsPaid(!isPaid)}
+            >
               Is Paid
             </Checkbox>
             <Spacer />
@@ -383,6 +396,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close }) => {
             borderColor="red"
             boxShadow="sm"
             fontWeight="medium"
+            onClick={resetFields}
           >
             Discard
           </Button>

@@ -5,7 +5,6 @@ import SalesOrders from "../components/sales/sales.orders";
 import { useEffect, useState } from "react";
 // import NewSaleOrder from "../components/modals/new-sale-order-modal";
 import { useNavigate } from "react-router-dom";
-import NewSaleOrder from "../components/modals/new-sale-order-modal";
 
 // import NewSaleOrder from "../components/modals/new-sale-order-modal";
 
@@ -78,8 +77,7 @@ const Sales = () => {
           </Button>
         </Box>
       </Flex>
-      <SalesOrders activeTab={activeTab} />
-      {openNewOrder && <NewSaleOrder open={openNewOrder} close={closeOrder} />}
+      <SalesOrders activeTab={activeTab} open={openNewOrder} close={closeOrder}/>
     </Wrapper>
   );
 };
