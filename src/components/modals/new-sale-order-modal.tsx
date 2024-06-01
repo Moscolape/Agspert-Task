@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState } from "react"; // Import React and necessary hooks
 import {
   Box,
   Button,
@@ -25,48 +26,51 @@ import {
   Center,
   FormControl,
   FormLabel,
-} from "@chakra-ui/react";
+} from "@chakra-ui/react"; // Import necessary components from Chakra UI
+import { Customers } from "../../schemas/customers"; // Import Customers data
+import { Products } from "../../schemas/products"; // Import Products data
+import { SaleOrder } from "../../schemas/sale-order"; // Import SaleOrder interface
+import useCustomMultiSelect from "../../utils/custom-hook"; // Import custom hook
+import { MultiSelect } from "chakra-multiselect"; // Import MultiSelect component
 
-import { Customers } from "../../schemas/customers";
-import { MultiSelect, useMultiSelect } from "chakra-multiselect";
-import { Products } from "../../schemas/products";
-import { SaleOrder } from "../../schemas/sale-order";
-
+// Define props interface for NewSaleOrder component
 interface Order {
-  open: boolean;
-  close: () => void;
-  add: (params: SaleOrder) => void;
+  open: boolean; // Flag to control modal visibility
+  close: () => void; // Function to close the modal
+  add: (params: SaleOrder) => void; // Function to add a new sale order
 }
 
+// NewSaleOrder component
 const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
+  // Prepare product options for MultiSelect
   const productOptions = Products.map((product) => ({
     label: product.name,
     value: product.id.toString(),
   }));
 
-  const { value, options, onChange } = useMultiSelect({
-    value: [],
-    options: productOptions,
-  });
+  // Custom hook for handling MultiSelect functionality
+  const { value, options, onChange } = useCustomMultiSelect(productOptions);
 
+  // State variables for managing form data
   const [isPaid, setIsPaid] = useState(false);
-  const [invoiceNo, setInvoiceNo] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [invoiceNo, setInvoiceNo] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState("");
 
+  // Function to create a new sale order
   const createNewOrder = () => {
-    // Check if any required field is empty
     if (!invoiceNo || !invoiceDate || !selectedCustomer || calculateTotalPrice() === 0) {
-      // If any required field is empty, don't add new sales order
       return;
     }
 
+    // Prepare items for the new sale order
     const items = Object.keys(totalItems).map((skuId) => ({
       sku_id: parseInt(skuId),
       price: sellingRates[skuId],
       quantity: totalItems[skuId],
     }));
 
+    // Prepare the new sale order object
     const newSaleOrder = {
       invoice_no: invoiceNo,
       invoice_date: invoiceDate,
@@ -74,20 +78,19 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
       customer_name: selectedCustomer,
       price: calculateTotalPrice(),
       paid: isPaid,
-      items: items
+      items: items,
     };
 
+    // Add the new sale order and close the modal
     add(newSaleOrder);
     close();
   };
 
-  // State to keep track of total items for selected products
+  // State variables for managing product quantities and selling rates
   const [totalItems, setTotalItems] = useState<{ [productId: string]: number }>({});
-
-  // State to keep track of selling rates for selected products
   const [sellingRates, setSellingRates] = useState<{ [skuId: string]: number }>({});
 
-  // Effect to reset total items and selling rates when products are cleared
+  // Reset fields when product selection changes
   useEffect(() => {
     if (Array.isArray(value) && value.length === 0) {
       setTotalItems({});
@@ -95,6 +98,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
     }
   }, [value]);
 
+  // Function to render all customer options
   const renderAllCustomers = () => {
     return Customers.map((customer, index) => (
       <option key={index} value={customer.customer_profile.name}>
@@ -103,39 +107,47 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
     ));
   };
 
+  // Color mode values
   const modalBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
 
+  // Responsive design values
   const modalWidth = useBreakpointValue({ base: "90%", md: "2xl" });
   const boxWidth = useBreakpointValue({ base: "100%", md: "45%" });
 
+  // Event handler for quantity change
   const handleQuantityChange = (
     productId: string,
     skuId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = event.target;
-    const parsedValue = parseInt(value); // Parse the input value to an integer
+    const parsedValue = parseInt(value);
 
-    // Ensure the entered quantity doesn't exceed quantity_in_inventory
     const product = Products.find((p) => p.id.toString() === productId);
     const sku = product?.sku.find((s) => s.id.toString() === skuId);
     const maxQuantity = sku?.quantity_in_inventory || 0;
-    const quantity = Math.min(parsedValue, maxQuantity);
+
+    if (parsedValue > maxQuantity) {
+      // Show an alert if the entered quantity exceeds available quantity
+      alert(`Quantity cannot exceed available stock (${maxQuantity}).`);
+      return;
+    }
 
     setTotalItems((prevTotalItems) => {
       const updatedTotalItems = { ...prevTotalItems };
-      updatedTotalItems[skuId] = quantity;
+      updatedTotalItems[skuId] = parsedValue;
       return updatedTotalItems;
     });
   };
 
+  // Event handler for selling rate change
   const handleSellingRateChange = (
     skuId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = event.target;
-    const parsedValue = parseFloat(value); // Parse the input value to a float
+    const parsedValue = parseFloat(value);
 
     setSellingRates((prevSellingRates) => {
       const updatedSellingRates = { ...prevSellingRates };
@@ -144,6 +156,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
     });
   };
 
+  // Function to calculate total price of the sale order
   const calculateTotalPrice = () => {
     return Object.entries(totalItems).reduce((acc, [skuId, quantity]) => {
       const sellingRate = sellingRates[skuId] || 0;
@@ -151,10 +164,11 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
     }, 0);
   };
 
+  // Function to reset all fields
   const resetFields = () => {
-    setInvoiceNo('');
-    setInvoiceDate('');
-    setSelectedCustomer('');
+    setInvoiceNo("");
+    setInvoiceDate("");
+    setSelectedCustomer("");
     setTotalItems({});
     setSellingRates({});
     setIsPaid(false);
@@ -265,7 +279,9 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
                                   mt={5}
                                 >
                                   <FormControl mb={5} w={boxWidth}>
-                                    <FormLabel fontWeight="medium">Selling Rate</FormLabel>
+                                    <FormLabel fontWeight="medium">
+                                      Selling Rate
+                                    </FormLabel>
                                     <Input
                                       placeholder="Enter selling rate"
                                       onChange={(e) =>
@@ -283,7 +299,9 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
                                   </FormControl>
                                   <Spacer />
                                   <FormControl mb={5} w={boxWidth}>
-                                    <FormLabel fontWeight="medium">Total Items</FormLabel>
+                                    <FormLabel fontWeight="medium">
+                                      Total Items
+                                    </FormLabel>
                                     <Input
                                       type="number"
                                       placeholder="Enter quantity"
@@ -294,7 +312,7 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
                                       }
                                       onChange={(e) =>
                                         handleQuantityChange(
-                                          selectedProduct.value,
+                                          String(selectedProduct.value),
                                           unit.id.toString(),
                                           e
                                         )
@@ -318,7 +336,11 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
                                 right={0}
                                 cursor="auto"
                               >
-                                {`${unit.quantity_in_inventory} items remaining`}
+                                {`${
+                                  unit.quantity_in_inventory -
+                                    totalItems[unit.id] ||
+                                  unit.quantity_in_inventory
+                                } items remaining`}
                               </Button>
                             </Card>
                           ))

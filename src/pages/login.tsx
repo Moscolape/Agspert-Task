@@ -1,3 +1,4 @@
+
 import {
   Center,
   Image,
@@ -26,41 +27,48 @@ import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { Customer } from "../schemas/customers";
 
+// Define the structure of input for login
 interface LoginInput {
   email: string;
   password: string;
 }
 
+// Define the structure of output for login
 type LoginOutput = {
   message: string;
   customer: Customer;
 };
 
+// Login component
 const Login = () => {
-  const [show, setShow] = useState(false);
-  const { colorMode, toggleColorMode } = useColorMode();
+  // State variables
+  const [show, setShow] = useState(false); // State for password visibility toggle
+  const { colorMode, toggleColorMode } = useColorMode(); // Color mode and its toggle function
 
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(''); // State for login error message
+  const [isLoading, setIsLoading] = useState(false); // State for loading spinner
 
-  const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>();
+  const navigate = useNavigate(); // Navigation function
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>(); // Form control using react-hook-form
 
+  // Function to toggle password visibility
   const handleClick = () => {
     setShow(!show);
   };
 
+  // Fake login function (simulate API call)
   const fakeLogin = async ({
     email,
     password,
   }: LoginInput): Promise<LoginOutput> => {
-    setIsLoading(true);
+    setIsLoading(true); // Set loading state to true
     const fixedUsername = "jesus_christ@church.com";
     const fixedPassword = "Mumbai";
 
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         if (email === fixedUsername && password === fixedPassword) {
+          // Mocked customer data on successful login
           const customer = {
             id: 9,
             customer: 11908,
@@ -76,37 +84,41 @@ const Login = () => {
               gst: "",
             },
           };
-          resolve({ message: "Success", customer });
-          setIsLoading(false);
+          resolve({ message: "Success", customer }); // Resolve with success message and customer data
+          setIsLoading(false); // Set loading state to false
         } else {
-          setIsLoading(false);
-          reject(new Error("Invalid username or password"));
+          setIsLoading(false); // Set loading state to false
+          reject(new Error("Invalid username or password")); // Reject with error message
         }
       }, 2000);
     });
   };
 
+  // Mutation hook for handling login mutation
   const mutation: UseMutationResult<LoginOutput, Error, LoginInput> =
     useMutation({
       mutationFn: fakeLogin,
       onSuccess: (data) => {
-        sessionStorage.setItem("customer", JSON.stringify(data.customer));
-        navigate("/sales");
+        sessionStorage.setItem("customer", JSON.stringify(data.customer)); // Store customer data in sessionStorage
+        navigate("/sales"); // Navigate to sales page on successful login
       },
       onError: (error: Error) => {
-        setError(error.message);
+        setError(error.message); // Set login error message on error
       },
     });
 
+  // Form submit handler
   const onSubmit: SubmitHandler<LoginInput> = (data) => {
-    mutation.mutate(data);
+    mutation.mutate(data); // Trigger the login mutation
   };
 
   // Use color mode values
-  const modalBg = useColorModeValue("white", "gray.800");
-  const textColor = useColorModeValue("gray.800", "white");
+  const modalBg = useColorModeValue("white", "gray.800"); // Background color
+  const textColor = useColorModeValue("gray.800", "white"); // Text color
 
+  // Determine icon size based on screen size
   const iconSize = useBreakpointValue({ base: "sm", md: "md" });
+  
 
   return (
     <Flex

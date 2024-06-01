@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  // Import necessary components from Chakra UI
   Box,
   Button,
   Flex,
@@ -16,8 +17,9 @@ import {
   Checkbox,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { SaleOrder, SaleOrderItem } from "../../schemas/sale-order";
+import { SaleOrder, SaleOrderItem } from "../../schemas/sale-order"; // Import sale order schema
 
+// Define props for EditSaleOrder component
 interface Order {
   order: SaleOrder | null;
   open: boolean;
@@ -25,16 +27,20 @@ interface Order {
   updateOrder: (order: SaleOrder) => void;
 }
 
+// EditSaleOrder component
 const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => {
+  // State variables
   const [customerId, setCustomerId] = useState<number | string>(order?.customer_id || "");
   const [customerName, setCustomerName] = useState(order?.customer_name || "");
   const [isPaid, setIsPaid] = useState(order?.paid || false);
   const [items, setItems] = useState<SaleOrderItem[]>(order?.items || []);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  // Chakra UI styling hooks
   const modalBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.800", "white");
 
+  // useEffect to calculate total price when items change
   useEffect(() => {
     const calculateTotalPrice = () => {
       const total = items.reduce((acc, item) => acc + item.quantity * item.price, 0);
@@ -43,6 +49,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
     calculateTotalPrice();
   }, [items]);
 
+  // Function to handle update button click
   const handleUpdate = () => {
     if (order) {
       const updatedOrder: SaleOrder = {
@@ -58,6 +65,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
     }
   };
 
+  // Function to handle items textarea change
   const handleItemsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newItems = e.target.value.split("\n").map((line) => {
       const [skuId, rest] = line.split(" => ");
@@ -67,11 +75,15 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
     setItems(newItems);
   };
 
+  // Chakra UI hook for modal size
   const modalSize = useBreakpointValue({ base: "full", md: "xl" });
 
+  // JSX rendering
   return (
     <Modal isOpen={open} onClose={close} size={modalSize} isCentered>
+      {/* Overlay for the modal */}
       <ModalOverlay bg="blackAlpha.500" />
+      {/* Modal content */}
       <ModalContent
         p={6}
         fontFamily="Inter"
@@ -80,17 +92,21 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
         bg={modalBg}
         borderRadius={{ base: "0", md: "md" }}
       >
+        {/* Modal close button */}
         <ModalCloseButton onClick={close} />
+        {/* Modal header */}
         <ModalHeader display="flex" justifyContent="center">
           <Text fontWeight="semibold" color={textColor} fontSize="2xl">
             Edit Sale Order
           </Text>
         </ModalHeader>
+        {/* Modal body */}
         <ModalBody
           overflowY="scroll"
           height={{ base: "calc(100vh - 140px)", md: "60vh" }}
           className="custom-scrollbar-example"
         >
+          {/* Customer Id input */}
           <Box mb={5}>
             <Text fontWeight="medium">Customer Id</Text>
             <Input
@@ -102,6 +118,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             />
           </Box>
+          {/* Customer Name input */}
           <Box mb={5}>
             <Text fontWeight="medium">Customer Name</Text>
             <Input
@@ -114,6 +131,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
               _focus={{ boxShadow: "none", borderColor: "gray.300" }}
             />
           </Box>
+          {/* Checkbox for 'Is Paid' */}
           {order?.paid === false && (
             <Box mb={5}>
               <Checkbox
@@ -126,6 +144,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
               </Checkbox>
             </Box>
           )}
+          {/* Items Purchased textarea */}
           <Box mb={5}>
             <Text fontWeight="medium">Items Purchased</Text>
             <Textarea
@@ -142,6 +161,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
               readOnly={order?.paid === true}
             />
           </Box>
+          {/* Total Price input */}
           <Box mb={5}>
             <Text fontWeight="medium">Total Price</Text>
             <Input
@@ -154,6 +174,7 @@ const EditSaleOrder: React.FC<Order> = ({ order, open, close, updateOrder }) => 
             />
           </Box>
         </ModalBody>
+        {/* Footer with update button */}
         <Flex justify="center" mt={6}>
           <Button
             colorScheme="red"

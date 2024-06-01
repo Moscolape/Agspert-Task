@@ -27,16 +27,16 @@ const Logout: React.FC<LogoutModalProps> = ({ isOpen, close }) => {
 
   // Function to handle logout
   const handleLogout = () => {
-    sessionStorage.clear();
+    sessionStorage.clear(); // Clear session storage
     navigate("/"); // Navigate to login page
   };
 
   // Use color mode values
-  const modalBg = useColorModeValue("white", "gray.800");
-  const textColor = useColorModeValue("gray.800", "white");
+  const modalBg = useColorModeValue("white", "gray.800"); // Background color based on color mode
+  const textColor = useColorModeValue("gray.800", "white"); // Text color based on color mode
 
   // Adjust modal size based on screen size
-  const modalSize = useBreakpointValue({ base: "xs", md: "md" });
+  const modalSize = useBreakpointValue({ base: "xs", md: "md" }); // Responsive modal size
 
   return (
     <Modal isOpen={isOpen} onClose={close} size={modalSize} isCentered>

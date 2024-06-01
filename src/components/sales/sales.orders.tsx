@@ -27,7 +27,7 @@ import NewSaleOrder from "../modals/new-sale-order-modal";
 const fetchSaleOrders = (): Promise<SaleOrder[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(SaleOrders);
+      resolve(SaleOrders); // Resolve with mocked sale orders after 2 seconds
     }, 2000);
   });
 };
@@ -39,20 +39,24 @@ interface SalesProps {
 }
 
 const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
-  const [openEdit, setOpenEdit] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<SaleOrder | null>(null);
-  const [orders, setOrders] = useState<SaleOrder[]>([]);
+  // State variables
+  const [openEdit, setOpenEdit] = useState(false); // State for edit modal visibility
+  const [selectedOrder, setSelectedOrder] = useState<SaleOrder | null>(null); // State for selected order
+  const [orders, setOrders] = useState<SaleOrder[]>([]); // State for sale orders
 
+  // Open edit modal with selected order
   const Edit = (order: SaleOrder) => {
     setOpenEdit(true);
     setSelectedOrder(order);
   };
 
+  // Close edit modal
   const closeEdit = () => {
     setOpenEdit(false);
     setSelectedOrder(null);
   };
 
+  // Update order after editing
   const updateOrder = (updatedOrder: SaleOrder) => {
     setOrders((prevOrders) =>
       prevOrders.map((order) =>
@@ -62,6 +66,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
     closeEdit();
   };
 
+  // Add new order
   const addNewOrder = (newOrder: SaleOrder) => {
     setOrders(prevOrders => {
       if (newOrder.paid) {
@@ -74,19 +79,23 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
     });
   };
 
+  // Fetch sale orders using react-query
   const { data, error, isLoading } = useQuery<SaleOrder[], Error>({
     queryKey: ["saleOrders"],
     queryFn: fetchSaleOrders,
   });
 
+  // Update orders when data is fetched
   useEffect(() => {
     if (data) {
       setOrders(data);
     }
   }, [data]);
   
+  // Determine if the screen is mobile
   const isMobile = useBreakpointValue({ base: true, md: false });
   
+  // Loading state
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -95,6 +104,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
@@ -103,6 +113,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
     );
   }
 
+  // Filter orders based on activeTab
   const filteredOrders = orders.filter((order) =>
     activeTab === "active" ? !order.paid : order.paid
   );
@@ -111,6 +122,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
   return (
     <TableContainer>
       {isMobile ? (
+        // Render stack for mobile view
         <Stack spacing={4}>
           {filteredOrders.map((order: SaleOrder) => (
             <Box key={order.invoice_no} p={4} borderWidth="1px" borderRadius="lg">
@@ -142,6 +154,7 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
           ))}
         </Stack>
       ) : (
+        // Render table for desktop view
         <Table variant="striped" colorScheme="gray">
           <Thead>
             <Tr>
@@ -183,9 +196,10 @@ const SalesOrders: React.FC<SalesProps> = ({ activeTab, open, close }) => {
         </Table>
       )}
       {openEdit && selectedOrder && (
+        // Render edit modal if openEdit is true and selectedOrder is not null
         <EditSaleOrder open={openEdit} close={closeEdit} order={selectedOrder} updateOrder={updateOrder} />
       )}
-      {open && <NewSaleOrder open={open} close={close} add={addNewOrder}/>}
+      {open && <NewSaleOrder open={open} close={close} add={addNewOrder}/>} // Render new sale order modal if open is true
     </TableContainer>
   );
 };
