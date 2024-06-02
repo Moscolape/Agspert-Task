@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react"; // Import React and necessary hooks
 import {
   Box,
@@ -29,9 +28,10 @@ import {
 } from "@chakra-ui/react"; // Import necessary components from Chakra UI
 import { Customers } from "../../schemas/customers"; // Import Customers data
 import { Products } from "../../schemas/products"; // Import Products data
-import { SaleOrder } from "../../schemas/sale-order"; // Import SaleOrder interface
+import { SaleOrder } from "../../schemas/sale-order"; // Import SaleOrder data
 import useCustomMultiSelect from "../../utils/custom-hook"; // Import custom hook
 import { MultiSelect } from "chakra-multiselect"; // Import MultiSelect component
+import { useForm, Controller } from "react-hook-form"; // Import react-hook-form
 
 // Define props interface for NewSaleOrder component
 interface Order {
@@ -42,6 +42,14 @@ interface Order {
 
 // NewSaleOrder component
 const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
+  const {
+    handleSubmit,
+    register,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   // Prepare product options for MultiSelect
   const productOptions = Products.map((product) => ({
     label: product.name,
@@ -50,41 +58,6 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
 
   // Custom hook for handling MultiSelect functionality
   const { value, options, onChange } = useCustomMultiSelect(productOptions);
-
-  // State variables for managing form data
-  const [isPaid, setIsPaid] = useState(false);
-  const [invoiceNo, setInvoiceNo] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState("");
-
-  // Function to create a new sale order
-  const createNewOrder = () => {
-    if (!invoiceNo || !invoiceDate || !selectedCustomer || calculateTotalPrice() === 0) {
-      return;
-    }
-
-    // Prepare items for the new sale order
-    const items = Object.keys(totalItems).map((skuId) => ({
-      sku_id: parseInt(skuId),
-      price: sellingRates[skuId],
-      quantity: totalItems[skuId],
-    }));
-
-    // Prepare the new sale order object
-    const newSaleOrder = {
-      invoice_no: invoiceNo,
-      invoice_date: invoiceDate,
-      customer_id: Math.floor(10000 + Math.random() * 90000),
-      customer_name: selectedCustomer,
-      price: calculateTotalPrice(),
-      paid: isPaid,
-      items: items,
-    };
-
-    // Add the new sale order and close the modal
-    add(newSaleOrder);
-    close();
-  };
 
   // State variables for managing product quantities and selling rates
   const [totalItems, setTotalItems] = useState<{ [productId: string]: number }>({});
@@ -119,9 +92,8 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
   const handleQuantityChange = (
     productId: string,
     skuId: string,
-    event: React.ChangeEvent<HTMLInputElement>
+    value: string
   ) => {
-    const { value } = event.target;
     const parsedValue = parseInt(value);
 
     const product = Products.find((p) => p.id.toString() === productId);
@@ -144,9 +116,8 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
   // Event handler for selling rate change
   const handleSellingRateChange = (
     skuId: string,
-    event: React.ChangeEvent<HTMLInputElement>
+    value: string
   ) => {
-    const { value } = event.target;
     const parsedValue = parseFloat(value);
 
     setSellingRates((prevSellingRates) => {
@@ -166,13 +137,40 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
 
   // Function to reset all fields
   const resetFields = () => {
-    setInvoiceNo("");
-    setInvoiceDate("");
-    setSelectedCustomer("");
+    reset();
+    onChange([]);
     setTotalItems({});
     setSellingRates({});
-    setIsPaid(false);
-    onChange([]);
+  };
+
+  // Function to create a new sale order
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSubmit = (data: any) => {
+    if (calculateTotalPrice() === 0) {
+      return;
+    }
+
+    // Prepare items for the new sale order
+    const items = Object.keys(totalItems).map((skuId) => ({
+      sku_id: parseInt(skuId),
+      price: sellingRates[skuId],
+      quantity: totalItems[skuId],
+    }));
+
+    // Prepare the new sale order object
+    const newSaleOrder = {
+      invoice_no: data.invoiceNo,
+      invoice_date: data.invoiceDate,
+      customer_id: Math.floor(10000 + Math.random() * 90000),
+      customer_name: data.selectedCustomer,
+      price: calculateTotalPrice(),
+      paid: data.isPaid,
+      items: items,
+    };
+
+    // Add the new sale order and close the modal
+    add(newSaleOrder);
+    close();
   };
 
   return (
@@ -196,245 +194,263 @@ const NewSaleOrder: React.FC<Order> = ({ open, close, add }) => {
           height="70vh"
           className="custom-scrollbar-example"
         >
-          <Flex direction={useBreakpointValue({ base: "column", md: "row" })}>
-            <FormControl mb={5} w={boxWidth} isRequired>
-              <FormLabel fontWeight="medium">Invoice Number</FormLabel>
-              <Input
-                value={invoiceNo}
-                onChange={(e) => setInvoiceNo(e.target.value)}
-                outline="none"
-                _focus={{ boxShadow: "none", borderColor: "gray.300" }}
-              />
-            </FormControl>
-            <Spacer />
-            <FormControl mb={5} w={boxWidth} isRequired>
-              <FormLabel fontWeight="medium">Invoice Date</FormLabel>
-              <Input
-                type="date"
-                value={invoiceDate}
-                onChange={(e) => setInvoiceDate(e.target.value)}
-                outline="none"
-                _focus={{ boxShadow: "none", borderColor: "gray.300" }}
-              />
-            </FormControl>
-          </Flex>
-          <FormControl mb={5} isRequired>
-            <FormLabel fontWeight="medium">Customer</FormLabel>
-            <Select
-              placeholder="Select a customer"
-              value={selectedCustomer}
-              onChange={(e) => setSelectedCustomer(e.target.value)}
-              outline="none"
-              _focus={{ boxShadow: "none", borderColor: "gray.300" }}
-            >
-              {renderAllCustomers()}
-            </Select>
-          </FormControl>
-          <FormControl mb={5} isRequired>
-            <FormLabel fontWeight="medium">All Products</FormLabel>
-            <MultiSelect
-              options={options}
-              value={value}
-              onChange={onChange}
-              placeholder="Select product(s)"
-            />
-          </FormControl>
-          <Box mb={5} mt={10}>
-            <Accordion allowToggle>
-              {Array.isArray(value) &&
-                value.map((selectedProduct) => {
-                  const product = Products.find(
-                    (p) => p.id.toString() === selectedProduct.value
-                  );
-                  return (
-                    <AccordionItem key={selectedProduct.value}>
-                      <h2>
-                        <AccordionButton>
-                          <Box flex="1" textAlign="left" fontWeight={600}>
-                            {product?.name}
-                          </Box>
-                          <AccordionIcon />
-                        </AccordionButton>
-                      </h2>
-                      <AccordionPanel pb={4}>
-                        {product!.sku.length > 0 ? (
-                          product?.sku.map((unit) => (
-                            <Card key={unit.id} my={3} position="relative">
-                              <Box p={3} my={3}>
-                                <Flex
-                                  alignItems="center"
-                                  borderBottomWidth={1}
-                                  borderBottomColor="grey"
-                                >
-                                  <Text
-                                    fontWeight={500}
-                                  >{`SKU ${unit.id} (${unit.amount}) kg`}</Text>
-                                  <Spacer />
-                                  <Text
-                                    p={2}
-                                  >{`Rate: ₹ ${unit.selling_price}`}</Text>
-                                </Flex>
-                                <Flex
-                                  direction={{ base: "column", md: "row" }}
-                                  mt={5}
-                                >
-                                  <FormControl mb={5} w={boxWidth}>
-                                    <FormLabel fontWeight="medium">
-                                      Selling Rate
-                                    </FormLabel>
-                                    <Input
-                                      placeholder="Enter selling rate"
-                                      onChange={(e) =>
-                                        handleSellingRateChange(
-                                          unit.id.toString(),
-                                          e
-                                        )
-                                      }
-                                      outline="none"
-                                      _focus={{
-                                        boxShadow: "none",
-                                        borderColor: "gray.300",
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <Spacer />
-                                  <FormControl mb={5} w={boxWidth}>
-                                    <FormLabel fontWeight="medium">
-                                      Total Items
-                                    </FormLabel>
-                                    <Input
-                                      type="number"
-                                      placeholder="Enter quantity"
-                                      max={
-                                        unit.quantity_in_inventory
-                                          ? unit.quantity_in_inventory
-                                          : undefined
-                                      }
-                                      onChange={(e) =>
-                                        handleQuantityChange(
-                                          String(selectedProduct.value),
-                                          unit.id.toString(),
-                                          e
-                                        )
-                                      }
-                                      outline="none"
-                                      _focus={{
-                                        boxShadow: "none",
-                                        borderColor: "gray.300",
-                                      }}
-                                    />
-                                  </FormControl>
-                                </Flex>
-                              </Box>
-                              <Button
-                                size="sm"
-                                fontWeight="normal"
-                                p={1}
-                                colorScheme="red"
-                                position="absolute"
-                                bottom={0}
-                                right={0}
-                                cursor="auto"
-                              >
-                                {`${
-                                  unit.quantity_in_inventory -
-                                    totalItems[unit.id] ||
-                                  unit.quantity_in_inventory
-                                } items remaining`}
-                              </Button>
-                            </Card>
-                          ))
-                        ) : (
-                          <Center>
-                            <Text
-                              fontFamily="body"
-                              fontSize="20px"
-                              fontWeight="medium"
-                              my={7}
-                            >
-                              No SKU available for this product.
-                            </Text>
-                          </Center>
-                        )}
-                      </AccordionPanel>
-                    </AccordionItem>
-                  );
-                })}
-            </Accordion>
-          </Box>
-          <Flex
-            mt={10}
-            direction={useBreakpointValue({ base: "column", md: "row" })}
-          >
-            <Checkbox
-              colorScheme="red"
-              size="lg"
-              isChecked={isPaid}
-              onChange={() => setIsPaid(!isPaid)}
-            >
-              Is Paid
-            </Checkbox>
-            <Spacer />
-            <Flex align="center">
-              <Box
-                bg="gray.100"
-                borderRadius={5}
-                p={2}
-                color="black"
-                boxShadow="sm"
-                fontWeight="medium"
-                mt={{ base: 4, md: 0 }}
-              >
-                Total Price: ₹ {calculateTotalPrice()}
-              </Box>
-              <Box
-                bg="gray.100"
-                borderRadius={5}
-                color="black"
-                p={2}
-                ml={3}
-                boxShadow="sm"
-                fontWeight="medium"
-                mt={{ base: 4, md: 0 }}
-              >
-                Total Items:{" "}
-                {Object.values(totalItems).reduce(
-                  (acc, current) => acc + current,
-                  0
-                )}
-              </Box>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Flex direction={useBreakpointValue({ base: "column", md: "row" })}>
+              <FormControl mb={5} w={boxWidth} isRequired>
+                <FormLabel fontWeight="medium">Invoice Number</FormLabel>
+                <Input
+                  {...register("invoiceNo", { required: true })}
+                  outline="none"
+                  _focus={{ boxShadow: "none", borderColor: "gray.300" }}
+                />
+                {errors.invoiceNo && <Text color="red.500">This field is required</Text>}
+              </FormControl>
+              <Spacer />
+              <FormControl mb={5} w={boxWidth} isRequired>
+                <FormLabel fontWeight="medium">Invoice Date</FormLabel>
+                <Input
+                  type="date"
+                  {...register("invoiceDate", { required: true })}
+                  outline="none"
+                  _focus={{ boxShadow: "none", borderColor: "gray.300" }}
+                />
+                {errors.invoiceDate && <Text color="red.500">This field is required</Text>}
+              </FormControl>
             </Flex>
-          </Flex>
+            <FormControl mb={5} isRequired>
+              <FormLabel fontWeight="medium">Customer</FormLabel>
+              <Select
+                placeholder="Select a customer"
+                {...register("selectedCustomer", { required: true })}
+                outline="none"
+                _focus={{ boxShadow: "none", borderColor: "gray.300" }}
+              >
+                {renderAllCustomers()}
+              </Select>
+              {errors.selectedCustomer && <Text color="red.500">This field is required</Text>}
+            </FormControl>
+            <FormControl mb={5} isRequired>
+              <FormLabel fontWeight="medium">All Products</FormLabel>
+              <Controller
+                name="products"
+                control={control}
+                render={({ field }) => (
+                  <MultiSelect
+                    {...field}
+                    options={options}
+                    value={value}
+                    onChange={(selected) => {
+                      field.onChange(selected);
+                      onChange(selected);
+                    }}
+                    placeholder="Select product(s)"
+                  />
+                )}
+              />
+            </FormControl>
+            <Box mb={5} mt={10}>
+              <Accordion allowToggle>
+                {Array.isArray(value) &&
+                  value.map((selectedProduct) => {
+                    const product = Products.find(
+                      (p) => p.id.toString() === selectedProduct.value
+                    );
+                    return (
+                      <AccordionItem key={selectedProduct.value}>
+                        <h2>
+                          <AccordionButton>
+                            <Box flex="1" textAlign="left" fontWeight={600}>
+                              {product?.name}
+                            </Box>
+                            <AccordionIcon />
+                          </AccordionButton>
+                        </h2>
+                        <AccordionPanel pb={4}>
+                          {product!.sku.length > 0 ? (
+                            product?.sku.map((unit) => (
+                              <Card key={unit.id} my={3} position="relative">
+                                <Box p={3} my={3}>
+                                  <Flex
+                                    alignItems="center"
+                                    borderBottomWidth={1}
+                                    borderBottomColor="grey"
+                                  >
+                                    <Text
+                                      fontWeight={500}
+                                    >{`SKU ${unit.id} (${unit.amount}) kg`}</Text>
+                                    <Spacer />
+                                    <Text
+                                      p={2}
+                                    >{`Rate: ₹ ${unit.selling_price}`}</Text>
+                                  </Flex>
+                                  <Flex
+                                    direction={{ base: "column", md: "row" }}
+                                    mt={5}
+                                  >
+                                    <FormControl mb={5} w={boxWidth}>
+                                      <FormLabel fontWeight="medium">
+                                        Selling Rate
+                                      </FormLabel>
+                                      <Input
+                                        placeholder="Enter selling rate"
+                                        onChange={(e) =>
+                                          handleSellingRateChange(
+                                            unit.id.toString(),
+                                            e.target.value
+                                          )
+                                        }
+                                        outline="none"
+                                        _focus={{
+                                          boxShadow: "none",
+                                          borderColor: "gray.300",
+                                        }}
+                                      />
+                                    </FormControl>
+                                    <Spacer />
+                                    <FormControl mb={5} w={boxWidth}>
+                                      <FormLabel fontWeight="medium">
+                                        Total Items
+                                      </FormLabel>
+                                      <Input
+                                        type="number"
+                                        placeholder="Enter quantity"
+                                        max={
+                                          unit.quantity_in_inventory
+                                            ? unit.quantity_in_inventory
+                                            : undefined
+                                        }
+                                        onChange={(e) =>
+                                          handleQuantityChange(
+                                            String(selectedProduct.value),
+                                            unit.id.toString(),
+                                            e.target.value
+                                          )
+                                        }
+                                        outline="none"
+                                        _focus={{
+                                          boxShadow: "none",
+                                          borderColor: "gray.300",
+                                        }}
+                                      />
+                                    </FormControl>
+                                  </Flex>
+                                </Box>
+                                <Button
+                                  size="sm"
+                                  fontWeight="normal"
+                                  p={1}
+                                  colorScheme="red"
+                                  position="absolute"
+                                  bottom={0}
+                                  right={0}
+                                  cursor="auto"
+                                >
+                                  {`${
+                                    unit.quantity_in_inventory -
+                                      totalItems[unit.id] ||
+                                    unit.quantity_in_inventory
+                                  } items remaining`}
+                                </Button>
+                              </Card>
+                            ))
+                          ) : (
+                            <Center>
+                              <Text
+                                fontFamily="body"
+                                fontSize="20px"
+                                fontWeight="medium"
+                                my={7}
+                              >
+                                No SKU available for this product.
+                              </Text>
+                            </Center>
+                          )}
+                        </AccordionPanel>
+                      </AccordionItem>
+                    );
+                  })}
+              </Accordion>
+            </Box>
+            <Flex
+              mt={10}
+              direction={useBreakpointValue({ base: "column", md: "row" })}
+            >
+              <Controller
+                name="isPaid"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    colorScheme="red"
+                    size="lg"
+                    isChecked={field.value}
+                    onChange={field.onChange}
+                  >
+                    Is Paid
+                  </Checkbox>
+                )}
+              />
+              <Spacer />
+              <Flex align="center">
+                <Box
+                  bg="gray.100"
+                  borderRadius={5}
+                  p={2}
+                  color="black"
+                  boxShadow="sm"
+                  fontWeight="medium"
+                  mt={{ base: 4, md: 0 }}
+                >
+                  Total Price: ₹ {calculateTotalPrice()}
+                </Box>
+                <Box
+                  bg="gray.100"
+                  borderRadius={5}
+                  color="black"
+                  p={2}
+                  ml={3}
+                  boxShadow="sm"
+                  fontWeight="medium"
+                  mt={{ base: 4, md: 0 }}
+                >
+                  Total Items:{" "}
+                  {Object.values(totalItems).reduce(
+                    (acc, current) => acc + current,
+                    0
+                  )}
+                </Box>
+              </Flex>
+            </Flex>
+            <Flex
+              mt={6}
+              direction={useBreakpointValue({ base: "column", md: "row" })}
+            >
+              <Button
+                w={{ base: "100%", md: "48%" }}
+                colorScheme="white"
+                color="red"
+                border="1px"
+                borderColor="red"
+                boxShadow="sm"
+                fontWeight="medium"
+                onClick={resetFields}
+              >
+                Discard
+              </Button>
+              <Spacer />
+              <Button
+                type="submit"
+                colorScheme="gray"
+                color={textColor}
+                w={{ base: "100%", md: "48%" }}
+                boxShadow="sm"
+                fontWeight="medium"
+                mt={{ base: 4, md: 0 }}
+              >
+                Create Sale Order
+              </Button>
+            </Flex>
+          </form>
         </ModalBody>
-        <Flex
-          mt={6}
-          direction={useBreakpointValue({ base: "column", md: "row" })}
-        >
-          <Button
-            w={{ base: "100%", md: "48%" }}
-            colorScheme="white"
-            color="red"
-            border="1px"
-            borderColor="red"
-            boxShadow="sm"
-            fontWeight="medium"
-            onClick={resetFields}
-          >
-            Discard
-          </Button>
-          <Spacer />
-          <Button
-            colorScheme="gray"
-            color={textColor}
-            w={{ base: "100%", md: "48%" }}
-            boxShadow="sm"
-            fontWeight="medium"
-            mt={{ base: 4, md: 0 }}
-            onClick={createNewOrder}
-          >
-            Create Sale Order
-          </Button>
-        </Flex>
       </ModalContent>
     </Modal>
   );
